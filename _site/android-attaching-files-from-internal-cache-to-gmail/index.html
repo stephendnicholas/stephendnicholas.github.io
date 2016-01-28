@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+      <title>stephendnicholas.com</title>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <meta http-equiv="content-language" content="en-gb" />
+      <meta name="description" content="tech blog">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+      <link href="//fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" type="text/css" href="/css/main.css" />
+      <link href="atom.xml" type="application/atom+xml" rel="alternate" title="Site ATOM Feed">
+  </head>
+
+  <body>
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    <![endif]-->
+
+    <div class="off-canvas">
+      <figure class="avatar">
+        <img src="/assets/img/avatar.jpg" alt="Picture" title="That's me, Stephen Nicholas.">
+      </figure>
+      <div class="bio">
+          <h1>Hi, I'm Stephen Nicholas.</h1>
+          <p>And this is my blog. I'm a software engineer by trade (but mostly for fun) with a wide variety of experience and interests. Some of which I'll write about here.</p>
+      </div>
+      <nav>
+        <h6>Look me up on</h6>
+        <ul>
+          
+          <li><a href="https://twitter.com/sd_nicholas">Twitter</a></li>
+          
+          
+          <li><a href="https://github.com/stephendnicholas">Github</a></li>
+          
+          
+          <li><a href="https://www.linkedin.com/in/stephendnicholas">LinkedIn</a></li>
+          
+        </ul>
+      </nav>
+    </div>
+
+
+    <div class="site-wrapper">
+
+      <header>
+        <div class="h-wrap">
+          <h1 class="title"><a href="/" title="Back to Homepage">stephendnicholas.com</a></h1>
+          <a class="menu-icon" title="Open Bio"><span class="lines"></span></a>
+        </div>
+      </header>
+
+      <main>
+        <section class="single-wrap">
+  <article class="single-content" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="feat">
+      <h5 class="page-date">
+        <time datetime="2012-02-28T00:00:00-07:00" itemprop="datePublished">
+          28 February 2012
+        </time>
+      </h5>
+    </div>
+    <h1 class="page-title" itemprop="name headline">Android: Attaching files from internal cache to Gmail</h1>
+    <div itemprop="articleBody">
+      <p><em>Note: the method described in the post works well for Gmail, but apparently has some issues with other ACTION_SEND handlers (e.g. the MMS composer). A workaround is described in the comments.</em></p>
+
+<p>I’ve just spent the day modifying one of my Android applications so that it no longer requires the use of the SD card; making it use the internal cache for what little storage is required. Everything went pretty smoothly, until I got to a part of the app that tries to share some data by sending an email with an attachment via Gmail (using an <a href="http://developer.android.com/reference/android/content/Intent.html#ACTION_SEND" target="_blank"><code>ACTION_SEND</code></a> intent). Then things started behaving very oddly.</p>
+
+<p>What I saw was that the Compose activity would launch correctly and my file would be shown as attached (as an example, I’ve attached a text file called Test.txt here); however when I sent the message, the attachment was not on the received email:</p>
+
+<div class="inline_imgs">
+<img src="/assets/img/gmail_attach_1.png" style="width:45%" /><img src="/assets/img/gmail_attach_2.png" style="width:45%" />
+</div>
+
+<p>Or even shown in my Gmail sent folder.</p>
+
+<p>A quick browse through the log showed the reason:</p>
+
+<p><code>02-28 21:01:28.434: E/Gmail(19673): file:// attachment paths must point to file:///mnt/sdcard. Ignoring attachment file:///data/data/com.stephendnicholas.gmailattach/cache/Test.txt</code></p>
+
+<p>So, it looks like this is something Gmail has explicitly ruled out; though I’m not sure why. At this point I could easily get all moany and ranty, but today was a glass half full day and so it was time for a workaround.</p>
+
+<p>After a few false starts and a lot of searching, what I actually ended up doing was using a <a href="http://developer.android.com/reference/android/content/ContentProvider.html" target="_blank"><code>ContentProvider</code></a> to provide access to the file from my application’s internal cache; as apparently Gmail can happily resolve attachments this way.</p>
+
+<p>Unfortunately there wasn’t much example code to help me on my way, which is why I’ve decided to include a simple example here. There’s four main parts to this:</p>
+
+<ol>
+  <li>The <a href="http://developer.android.com/reference/android/content/ContentProvider.html" target="_blank"><code>ContentProvider</code></a> that provides access to the files from the application’s internal cache. Complete code, with comments, is shown below:</li>
+</ol>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">stephendnicholas</span><span class="o">.</span><span class="na">gmailattach</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.File</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.FileNotFoundException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.content.ContentProvider</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.content.ContentValues</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.content.UriMatcher</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.database.Cursor</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.net.Uri</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.os.ParcelFileDescriptor</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">android.util.Log</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CachedFileProvider</span> <span class="kd">extends</span> <span class="n">ContentProvider</span> <span class="o">{</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CLASS_NAME</span> <span class="o">=</span> <span class="s">&quot;CachedFileProvider&quot;</span><span class="o">;</span>
+
+  <span class="c1">// The authority is the symbolic name for the provider class</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">AUTHORITY</span> <span class="o">=</span> <span class="s">&quot;com.stephendnicholas.gmailattach.provider&quot;</span><span class="o">;</span>
+
+  <span class="c1">// UriMatcher used to match against incoming requests&lt;br /&gt; private UriMatcher uriMatcher;</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">uriMatcher</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">UriMatcher</span><span class="o">(</span><span class="n">UriMatcher</span><span class="o">.</span><span class="na">NO_MATCH</span><span class="o">);</span>
+
+    <span class="c1">// Add a URI to the matcher which will match against the form</span>
+    <span class="c1">// &#39;content://com.stephendnicholas.gmailattach.provider/*&#39;</span>
+    <span class="c1">// and return 1 in the case that the incoming Uri matches this pattern</span>
+    <span class="n">uriMatcher</span><span class="o">.</span><span class="na">addURI</span><span class="o">(</span><span class="n">AUTHORITY</span><span class="o">,</span> <span class="s">&quot;*&quot;</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+
+    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span> 
+  <span class="o">}</span>
+
+  
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">ParcelFileDescriptor</span> <span class="nf">openFile</span><span class="o">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="o">,</span> <span class="n">String</span> <span class="n">mode</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">FileNotFoundException</span> <span class="o">{</span>
+
+    <span class="n">String</span> <span class="n">LOG_TAG</span> <span class="o">=</span> <span class="n">CLASS_NAME</span> <span class="o">+</span> <span class="s">&quot; - openFile&quot;</span><span class="o">;</span>
+    <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Called with uri: &#39;&quot;</span> <span class="o">+</span> <span class="n">uri</span> <span class="o">+</span> <span class="s">&quot;&#39;.&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="o">.</span><span class="na">getLastPathSegment</span><span class="o">());</span>
+
+  <span class="c1">// Check incoming Uri against the matcher</span>
+  <span class="k">switch</span> <span class="o">(</span><span class="n">uriMatcher</span><span class="o">.</span><span class="na">match</span><span class="o">(</span><span class="n">uri</span><span class="o">))</span> <span class="o">{</span>
+    <span class="c1">// If it returns 1 - then it matches the Uri defined in onCreate</span>
+    <span class="k">case</span> <span class="mi">1</span><span class="o">:</span>
+      <span class="c1">// The desired file name is specified by the last segment of the path</span>
+      <span class="c1">// E.g. &#39;content://com.stephendnicholas.gmailattach.provider/Test.txt&#39;</span>
+      <span class="c1">// Take this and build the path to the file</span>
+      <span class="n">String</span> <span class="n">fileLocation</span> <span class="o">=</span> <span class="n">getContext</span><span class="o">().</span><span class="na">getCacheDir</span><span class="o">()</span> <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="n">uri</span><span class="o">.</span><span class="na">getLastPathSegment</span><span class="o">();</span>
+
+      <span class="c1">// Create &amp; return a ParcelFileDescriptor pointing to the file</span>
+      <span class="c1">// Note: I don&#39;t care what mode they ask for - they&#39;re only getting</span>
+      <span class="c1">// read only</span>
+      <span class="n">ParcelFileDescriptor</span> <span class="n">pfd</span> <span class="o">=</span> <span class="n">ParcelFileDescriptor</span><span class="o">.</span><span class="na">open</span><span class="o">(</span><span class="k">new</span> <span class="nf">File</span><span class="o">(</span><span class="n">fileLocation</span><span class="o">),</span>  <span class="n">ParcelFileDescriptor</span><span class="o">.</span><span class="na">MODE_READ_ONLY</span><span class="o">);</span>
+      <span class="k">return</span> <span class="n">pfd</span><span class="o">;</span>
+
+    <span class="c1">// Otherwise unrecognised Uri</span>
+    <span class="k">default</span><span class="o">:</span>
+      <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Unsupported uri: &#39;&quot;</span> <span class="o">+</span> <span class="n">uri</span> <span class="o">+</span> <span class="s">&quot;&#39;.&quot;</span><span class="o">);</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nf">FileNotFoundException</span><span class="o">(</span><span class="s">&quot;Unsupported uri: &quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="c1">// //////////////////////////////////////////////////////////////</span>
+  <span class="c1">// Not supported / used / required for this example</span>
+  <span class="c1">// //////////////////////////////////////////////////////////////</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">update</span><span class="o">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="o">,</span> <span class="n">ContentValues</span> <span class="n">contentvalues</span><span class="o">,</span> <span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="n">String</span><span class="o">[]</span> <span class="n">as</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span> <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">delete</span><span class="o">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="o">,</span> <span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="n">String</span><span class="o">[]</span> <span class="n">as</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span> <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Uri</span> <span class="nf">insert</span><span class="o">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="o">,</span> <span class="n">ContentValues</span> <span class="n">contentvalues</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="kc">null</span><span class="o">;</span> <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">String</span> <span class="nf">getType</span><span class="o">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="kc">null</span><span class="o">;</span> <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Cursor</span> <span class="nf">query</span><span class="o">(</span><span class="n">Uri</span> <span class="n">uri</span><span class="o">,</span> <span class="n">String</span><span class="o">[]</span> <span class="n">projection</span><span class="o">,</span> <span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="n">String</span><span class="o">[]</span> <span class="n">as1</span><span class="o">,</span> <span class="n">String</span> <span class="n">s1</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="kc">null</span><span class="o">;</span> <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
+
+<p>As you can see, all you really need to do is to overwrite the <code>openFile(...)</code> method. Although you can also override the <code>query(...)</code> method to provide more information to the application that calls you (it would make this example unnecessarily complicated, but I’m happy to provide code on request).</p>
+
+<p>To make this provider available to use, you need to add a line to your <code>AndroidManifest.xml</code> defining the class and the authority (symbolic name) used to reference it:</p>
+
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;provider</span> <span class="na">android:name=</span><span class="s">&quot;CachedFileProvider&quot;</span> <span class="na">android:authorities=</span><span class="s">&quot;com.stephendnicholas.gmailattach.provider&quot;</span><span class="nt">&gt;&lt;/provider&gt;</span></code></pre></div>
+
+<p><b>Note:</b> this needs to go inside the <code>&lt;application&gt;...&lt;/application&gt;</code> definition in your <code>AndroidManifest.xml</code>.</p>
+
+<ol start="2">
+  <li>
+    The utility method that creates a file in the internal cache:
+  </li>
+</ol>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">createCachedFile</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">String</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">String</span> <span class="n">content</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+
+  <span class="n">File</span> <span class="n">cacheFile</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">File</span><span class="o">(</span><span class="n">context</span><span class="o">.</span><span class="na">getCacheDir</span><span class="o">()</span> <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="n">fileName</span><span class="o">);</span>
+  <span class="n">cacheFile</span><span class="o">.</span><span class="na">createNewFile</span><span class="o">();</span>
+
+  <span class="n">FileOutputStream</span> <span class="n">fos</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FileOutputStream</span><span class="o">(</span><span class="n">cacheFile</span><span class="o">);</span>
+  <span class="n">OutputStreamWriter</span> <span class="n">osw</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">OutputStreamWriter</span><span class="o">(</span><span class="n">fos</span><span class="o">,</span> <span class="s">&quot;UTF8&quot;</span><span class="o">);</span>
+  <span class="n">PrintWriter</span> <span class="n">pw</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">PrintWriter</span><span class="o">(</span><span class="n">osw</span><span class="o">);</span>
+  
+  <span class="n">pw</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">content</span><span class="o">);</span>
+  
+  <span class="n">pw</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+  <span class="n">pw</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+<span class="o">}</span></code></pre></div>
+
+<ol start="3">
+  <li>
+    The utility method that creates the intent to send the content via Gmail (explicitly using Gmail, rather than using a chooser):
+  </li>
+</ol>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="n">Intent</span> <span class="nf">getSendEmailIntent</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">String</span> <span class="n">email</span><span class="o">,</span> <span class="n">String</span> <span class="n">subject</span><span class="o">,</span> <span class="n">String</span> <span class="n">body</span><span class="o">,</span> <span class="n">String</span> <span class="n">fileName</span><span class="o">)</span> <span class="o">{</span>
+
+  <span class="kd">final</span> <span class="n">Intent</span> <span class="n">emailIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Intent</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">Intent</span><span class="o">.</span><span class="na">ACTION_SEND</span><span class="o">);</span>
+
+  <span class="c1">//Explicitly only use Gmail to send</span>
+  <span class="n">emailIntent</span><span class="o">.</span><span class="na">setClassName</span><span class="o">(</span><span class="s">&quot;com.google.android.gm&quot;</span><span class="o">,</span><span class="s">&quot;com.google.android.gm.ComposeActivityGmail&quot;</span><span class="o">);</span>
+  
+  <span class="n">emailIntent</span><span class="o">.</span><span class="na">setType</span><span class="o">(</span><span class="s">&quot;plain/text&quot;</span><span class="o">);</span>
+
+  <span class="c1">//Add the recipients</span>
+  <span class="n">emailIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">Intent</span><span class="o">.</span><span class="na">EXTRA_EMAIL</span><span class="o">,</span> <span class="k">new</span> <span class="n">String</span><span class="o">[]</span> <span class="o">{</span> <span class="n">email</span> <span class="o">});</span>
+
+  <span class="n">emailIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">Intent</span><span class="o">.</span><span class="na">EXTRA_SUBJECT</span><span class="o">,</span> <span class="n">subject</span><span class="o">);</span>
+
+  <span class="n">emailIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">Intent</span><span class="o">.</span><span class="na">EXTRA_TEXT</span><span class="o">,</span> <span class="n">body</span><span class="o">);</span>
+
+  <span class="c1">//Add the attachment by specifying a reference to our custom ContentProvider</span>
+  <span class="c1">//and the specific file of interest</span>
+  <span class="n">emailIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">EXTRA_STREAM</span><span class="o">,</span> <span class="n">Uri</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="s">&quot;content://&quot;</span> <span class="o">+</span> <span class="n">CachedFileProvider</span><span class="o">.</span><span class="na">AUTHORITY</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">+</span> <span class="n">fileName</span><span class="o">));</span>
+
+  <span class="k">return</span> <span class="n">emailIntent</span><span class="o">;</span>
+<span class="o">}</span></code></pre></div>
+
+<ol start="4">
+  <li>
+    The code that calls 2 &amp; 3 to do something on a button press. Triggered in my dummy app by a button click:
+  </li>
+</ol>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">Button</span> <span class="n">button</span> <span class="o">=</span> <span class="o">(</span><span class="n">Button</span><span class="o">)</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">dostuff</span><span class="o">);</span>
+
+<span class="n">button</span><span class="o">.</span><span class="na">setOnClickListener</span><span class="o">(</span><span class="k">new</span> <span class="nf">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">View</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">Utils</span><span class="o">.</span><span class="na">createCachedFile</span><span class="o">(</span><span class="n">GmailAttacherActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="s">&quot;Test.txt&quot;</span><span class="o">,</span> <span class="s">&quot;This is a test&quot;</span><span class="o">);</span>
+
+      <span class="n">startActivity</span><span class="o">(</span><span class="n">Utils</span><span class="o">.</span><span class="na">getSendEmailIntent</span><span class="o">(</span> <span class="n">GmailAttacherActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="s">&quot;&lt;YOUR_EMAIL_HERE&gt;@&lt;YOUR_DOMAIN&gt;.com&quot;</span><span class="o">,</span> <span class="s">&quot;Test&quot;</span><span class="o">,</span> <span class="s">&quot;See attached&quot;</span><span class="o">,</span> <span class="s">&quot;Test.txt&quot;</span><span class="o">));</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ActivityNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Toast</span><span class="o">.</span><span class="na">makeText</span><span class="o">(</span><span class="n">GmailAttacherActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="s">&quot;Gmail is not available on this device.&quot;</span><span class="o">,</span> <span class="n">Toast</span><span class="o">.</span><span class="na">LENGTH_SHORT</span><span class="o">).</span><span class="na">show</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">});</span></code></pre></div>
+
+<p>Hopefully that’s all pretty straight forward, however feel free to ask any questions in the comments and I’ll help where I can.</p>
+
+<p>The full source is now available as a complete (albeit very simple) Android app on github: <a href="https://github.com/stephendnicholas/Android-Apps/tree/master/Gmail%20Attacher">Gmail Attacher</a>.</p>
+
+
+    </div>
+    
+    <div class="share-title">Share via</div>
+    
+    <div class="feat share">
+      <a href="http://twitter.com/share?text=Android: Attaching files from internal cache to Gmail - " class="popup">
+        <span class="icon-twitter"></span>
+      </a>
+    </div>
+    
+    <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = '//stephendnicholas.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+    
+  </article>
+</section>
+
+      </main>
+
+      <footer>
+        <small>&copy; Stephen Nicholas, 2011 &ndash; 2016 </small>
+      </footer>
+
+    </div>
+    
+
+    <script src="/js/main.js"></script>
+    
+    
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-72835313-1', 'stephendnicholas.com');
+        ga('send', 'pageview');
+      </script>
+    
+
+  </body>
+</html>

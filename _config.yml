@@ -1,0 +1,30 @@
+name: "stephendnicholas.com"
+description: "tech blog"
+author: "Stephen Nicholas"
+author-bio: "And this is my blog. I'm a software engineer by trade (but mostly for fun) with a wide variety of experience and interests. Some of which I'll write about here."
+
+url: "https://stephendnicholas.com"
+
+# Social Accounts
+twitter: sd_nicholas
+github: stephendnicholas
+linkedin: stephendnicholas
+
+# Google Analytics
+ga_domain: stephendnicholas.com
+ga_tracking_id: UA-72835313-1
+
+markdown: kramdown
+permalink: pretty
+highlighter: pygments
+
+paginate: 10
+paginate_path: "/posts/:num"
+
+# SCSS
+sass:
+  sass_dir: _scss
+  style: :compressed
+  
+safe: false
+

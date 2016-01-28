@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+      <title>stephendnicholas.com</title>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <meta http-equiv="content-language" content="en-gb" />
+      <meta name="description" content="tech blog">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+      <link href="//fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" type="text/css" href="/css/main.css" />
+      <link href="atom.xml" type="application/atom+xml" rel="alternate" title="Site ATOM Feed">
+  </head>
+
+  <body>
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    <![endif]-->
+
+    <div class="off-canvas">
+      <figure class="avatar">
+        <img src="/assets/img/avatar.jpg" alt="Picture" title="That's me, Stephen Nicholas.">
+      </figure>
+      <div class="bio">
+          <h1>Hi, I'm Stephen Nicholas.</h1>
+          <p>And this is my blog. I'm a software engineer by trade (but mostly for fun) with a wide variety of experience and interests. Some of which I'll write about here.</p>
+      </div>
+      <nav>
+        <h6>Look me up on</h6>
+        <ul>
+          
+          <li><a href="https://twitter.com/sd_nicholas">Twitter</a></li>
+          
+          
+          <li><a href="https://github.com/stephendnicholas">Github</a></li>
+          
+          
+          <li><a href="https://www.linkedin.com/in/stephendnicholas">LinkedIn</a></li>
+          
+        </ul>
+      </nav>
+    </div>
+
+
+    <div class="site-wrapper">
+
+      <header>
+        <div class="h-wrap">
+          <h1 class="title"><a href="/" title="Back to Homepage">stephendnicholas.com</a></h1>
+          <a class="menu-icon" title="Open Bio"><span class="lines"></span></a>
+        </div>
+      </header>
+
+      <main>
+        <section class="single-wrap">
+  <article class="single-content" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="feat">
+      <h5 class="page-date">
+        <time datetime="2011-12-10T00:00:00-07:00" itemprop="datePublished">
+          10 December 2011
+        </time>
+      </h5>
+    </div>
+    <h1 class="page-title" itemprop="name headline">Finding processes on (i.e. ps for) Windows</h1>
+    <div itemprop="articleBody">
+      <p>As part of creating some test infrastructure for a work project the other day, I was looking for a good way to find any existing / leftover processes, so I could ensure things were in a clean state at the start of each test run. On Linux this is pretty easy, using ps, but I couldn’t find a good way to do it on Windows.</p>
+
+<p>There’s the <a href="http://technet.microsoft.com/en-us/library/bb491010.aspx">tasklist</a> command, which will output the following:  </p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nl">C:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">IBM_ADMIN</span><span class="o">&gt;</span><span class="n">tasklist</span>
+
+<span class="n">Image</span> <span class="n">Name</span>                     <span class="n">PID</span> <span class="n">Session</span> <span class="n">Name</span>        <span class="n">Session</span><span class="err">#</span>    <span class="n">Mem</span> <span class="n">Usage</span>
+<span class="o">=========================</span> <span class="o">========</span> <span class="o">================</span> <span class="o">===========</span> <span class="o">============</span>
+<span class="n">System</span> <span class="n">Idle</span> <span class="n">Process</span>              <span class="mi">0</span> <span class="n">Services</span>                   <span class="mi">0</span>         <span class="mi">24</span> <span class="n">K</span>
+<span class="n">System</span>                           <span class="mi">4</span> <span class="n">Services</span>                   <span class="mi">0</span>      <span class="mi">1</span><span class="o">,</span><span class="mi">996</span> <span class="n">K</span>
+<span class="n">smss</span><span class="o">.</span><span class="na">exe</span>                       <span class="mi">448</span> <span class="n">Services</span>                   <span class="mi">0</span>      <span class="mi">1</span><span class="o">,</span><span class="mi">380</span> <span class="n">K</span>
+<span class="o">...</span></code></pre></div>
+
+<p>And for most cases, that’s enough. But I was looking for a particular Java process and unfortunately I couldn’t tell which of the java.exe processes were the ones I was interested in and which were for something else – as tasklist doesn’t provide enough information (i.e. the launch parameters).</p>
+
+<p>After a fair bit of Googling (which I’m hoping to save someone), I came accross a pretty cool command line interface called WMIC (<a href="http://technet.microsoft.com/en-us/library/bb742610.aspx">Intro</a> &amp; <a href="http://quux.wiki.zoho.com/WMIC-Snippets.html">Examples</a>) that’s immensely powerful for gathering information from Windows-based systems (and is installed by default since Windows 2000).</p>
+
+<p>It seems to do a whole load of stuff, but I was particularly interested in the process side of things and found that I could simply do:</p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nl">C:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">IBM_ADMIN</span><span class="o">&gt;</span><span class="n">WMIC</span> <span class="n">PROCESS</span> <span class="n">GET</span> <span class="n">Caption</span><span class="o">,</span><span class="n">Processid</span><span class="o">,</span><span class="n">Commandline</span>
+
+<span class="n">Caption</span>		<span class="n">CommandLine</span>		<span class="n">ProcessId</span>
+<span class="o">...</span>
+<span class="n">java</span><span class="o">.</span><span class="na">exe</span> 	<span class="n">java</span> <span class="o">-</span><span class="n">Xmx128m</span> <span class="o">-</span><span class="n">cp</span> <span class="s">&quot;.\lib;.\liblib\GAIANDB.jar;.\liblib\db2jcutdown.jar;.\liblib\derbyclient.jar;.\liblib\derby.jar;.\liblib\derbynet.jar;.\liblib\derbytrimmed.jar;.\liblib\wpml-pfg.jar;.\liblib\siapi.jar;.\liblib\esapi.jar;.\liblib\wmqtt.jar;C:\APPS\wpml-1.2\lib\wpml.jar;C:\APPS\wpml-1.2\lib\JSON4J.jar;C:\APPS\wpml-1.2\lib\arenatk.jar;C:\APPS\wpml-1.2\lib\antlr-2.7.7.jar;.\liblib\db2jcc.jar;.\liblib\db2jcc_license_cu.jar;.\liblib\ojdbc14.jar;.;C:\PROGRA~1\IBM\SQLLIB\java\db2java.zip;C:\PROGRA~1\IBM\SQLLIB\java\db2jcc.jar;C:\PROGRA~1\IBM\SQLLIB\java\sqlj.zip;C:\PROGRA~1\IBM\SQLLIB\java\db2jcc_license_cu.jar;C:\PROGRA~1\IBM\SQLLIB\bin;C:\PROGRA~1\IBM\SQLLIB\java\common.jar&quot;</span>  <span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">gaiandb</span><span class="o">.</span><span class="na">GaianNode</span> 	<span class="mi">7840</span>
+<span class="o">...</span></code></pre></div>
+
+<p>Now, this spits out info for all running processes (I’ve <strong>greatly</strong> trimmed down the result above), but I then found you can also pass in <code>WHERE</code> commands to restrict things to exactly what you want. E.g.  </p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nl">C:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">IBM_ADMIN</span><span class="o">&gt;</span><span class="n">WMIC</span> <span class="n">PROCESS</span> <span class="nf">WHERE</span> <span class="o">(</span><span class="n">CommandLine</span> <span class="n">like</span> <span class="err">&#39;</span><span class="o">%</span><span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">gaiandb</span><span class="o">.</span><span class="na">GaianNode</span><span class="o">%</span><span class="err">&#39;</span> <span class="n">AND</span> <span class="n">name</span><span class="o">=</span><span class="err">&#39;</span><span class="n">java</span><span class="o">.</span><span class="na">exe</span><span class="err">&#39;</span><span class="o">)</span> <span class="n">GET</span> <span class="n">processid</span>
+
+<span class="n">ProcessId</span>
+<span class="mi">7840</span></code></pre></div>
+
+<p>Which I could then easily parse to get the info I wanted.</p>
+
+<p>Note: In the above examples, I’ve restricted the fields that are returned. If you don’t restrict the GET, the full list of things that is returned is:  </p>
+
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">Caption</span><span class="o">,</span> <span class="n">CommandLine</span><span class="o">,</span> <span class="n">CreationClassName</span><span class="o">,</span> <span class="n">CreationDate</span><span class="o">,</span> <span class="n">CSCreationClassName</span><span class="o">,</span> <span class="n">CSName</span><span class="o">,</span> <span class="n">Description</span><span class="o">,</span> <span class="n">ExecutablePath</span><span class="o">,</span> <span class="n">ExecutionState</span><span class="o">,</span> <span class="n">Handle</span><span class="o">,</span> <span class="n">HandleCount</span><span class="o">,</span> <span class="n">InstallDate</span><span class="o">,</span> <span class="n">KernelModeTime</span><span class="o">,</span> <span class="n">MaximumWorkingSetSize</span><span class="o">,</span> <span class="n">MinimumWorkingSetSize</span><span class="o">,</span> <span class="n">Name</span><span class="o">,</span> <span class="n">OSCreationClassName</span><span class="o">,</span> <span class="n">OSName</span><span class="o">,</span> <span class="n">OtherOperationCount</span><span class="o">,</span> <span class="n">OtherTransferCount</span><span class="o">,</span> <span class="n">PageFaults</span><span class="o">,</span> <span class="n">PageFileUsage</span><span class="o">,</span> <span class="n">ParentProcessId</span><span class="o">,</span> <span class="n">PeakPageFileUsage</span><span class="o">,</span> <span class="n">PeakVirtualSize</span><span class="o">,</span> <span class="n">PeakWorkingSetSize</span><span class="o">,</span> <span class="n">Priority</span><span class="o">,</span> <span class="n">PrivatePageCount</span><span class="o">,</span> <span class="n">ProcessId</span><span class="o">,</span> <span class="n">QuotaNonPagedPoolUsage</span><span class="o">,</span> <span class="n">QuotaPagedPoolUsage</span><span class="o">,</span> <span class="n">QuotaPeakNonPagedPoolUsage</span><span class="o">,</span> <span class="n">QuotaPeakPagedPoolUsage</span><span class="o">,</span> <span class="n">ReadOperationCount</span><span class="o">,</span> <span class="n">ReadTransferCount</span><span class="o">,</span> <span class="n">SessionId</span><span class="o">,</span> <span class="n">Status</span><span class="o">,</span> <span class="n">TerminationDate</span><span class="o">,</span> <span class="n">ThreadCount</span><span class="o">,</span> <span class="n">UserModeTime</span><span class="o">,</span> <span class="n">VirtualSize</span><span class="o">,</span> <span class="n">WindowsVersion</span><span class="o">,</span> <span class="n">WorkingSetSize</span> <span class="n">WriteOperationCount</span><span class="o">,</span> <span class="n">WriteTransferCount</span></code></pre></div>
+
+
+    </div>
+    
+    <div class="share-title">Share via</div>
+    
+    <div class="feat share">
+      <a href="http://twitter.com/share?text=Finding processes on (i.e. ps for) Windows - " class="popup">
+        <span class="icon-twitter"></span>
+      </a>
+    </div>
+    
+    <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = '//stephendnicholas.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+    
+  </article>
+</section>
+
+      </main>
+
+      <footer>
+        <small>&copy; Stephen Nicholas, 2011 &ndash; 2016 </small>
+      </footer>
+
+    </div>
+    
+
+    <script src="/js/main.js"></script>
+    
+    
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-72835313-1', 'stephendnicholas.com');
+        ga('send', 'pageview');
+      </script>
+    
+
+  </body>
+</html>

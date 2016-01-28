@@ -1,0 +1,100 @@
+---
+layout: post
+permalink: /quicker-video-qr-codes
+alias: [/archives/310]
+
+title: 'QuickeR: Using video QR codes to transfer data'
+author: Stephen Nicholas
+excerpt: "My recent hack from Over the Air 2011: transferring data between devices using 'video' QR codes."
+---
+Recently I attended [Over the Air][1], which (to borrow from their website) is:
+
+> a great vibe of bean bags, gadgets, knowledge sharing, hacking & lots of good geekery.
+
+Or, to be more specific:
+
+> a unique tech-agnostic event for and by the developer community, featuring technical workshops where attendees can roll up their sleeves and tinker with new platforms, operating systems, APIs & SDKs; and tutorial sessions that feature real business cases, new insights and a healthy dollop of inspiration. Attendees are invited to stay overnight so that they can work on ideas, apps and hacks on the fly – to be entered into the various hack-athon competition categories and demo’ed on the second day.
+
+And it was awesome! I met some really cool people, was fantastically well looked after, and this year it was held in [Bletchley Park][2]; which is an amazing place and somewhere I&#8217;ve always wanted to visit.
+ 
+One of the more fun parts of the event was the traditional overnight hack; with people seeing what cool things they could cobble together (often involving some of the tech & APIs shown off at the event), which then got shown off the next day, with the best winning prizes.
+ 
+This is what I came up with:
+ 
+# <span style="color:#59ACFF;">Q</span>uicke<span style="color:#59ACFF;">R</span>
+
+The basic idea was to transfer data between &#8216;devices&#8217; using &#8216;video&#8217; QR codes, i.e. by splitting the data over multiple QR codes, which are then presented one after another as a video. Another device can then capture this video, split it into the separate QR codes, process them and recombine their contents to reproduce the original data.
+
+So, as an example, I took the following four QR codes:
+
+<table id="qrtable">
+  <tr>
+    <td>
+      <img src="{{ site.baseurl }}/assets/img/1.png" />
+    </td>
+    <td>
+      <img src="{{ site.baseurl }}/assets/img/2.png" />
+    </td>
+    <td>
+      <img src="{{ site.baseurl }}/assets/img/3.png" />
+    </td>
+    <td>
+      <img src="{{ site.baseurl }}/assets/img/4.png" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>1This</code>
+    </td>
+    <td>
+      <code>2is</code>
+    </td>
+    <td>
+      <code>3a</code>
+    </td>
+    <td>
+      <code>4test</code>
+    </td>
+  </tr>
+</table>
+ 
+And combined them into the following video (gif):
+ 
+<img src="{{ site.baseurl}}/assets/img/fast.gif" style="width:30%" />
+
+*Note: the numbers are there to denote the order of the elements, as the video will repeat endlessly and we don&#8217;t know where it started.*
+ 
+I then created an Android app that could read the video and reconstitute the data:
+
+<div style="width:100%; text-align:center">
+  <iframe width="420" height="315" src="https://www.youtube.com/embed/RPM-oDcWcrk" frameborder="0" allowfullscreen></iframe>
+</div>
+ 
+Now, not to sound too full of myself, but I think is a pretty cool idea and it&#8217;s something that I don&#8217;t think I&#8217;ve seen anywhere before. 
+
+The initial use case I came up with was for transferring data between mobile phones, particularly in situations when network connectivity wasn&#8217;t available or was unreliable (which was unfortunately the case at Over the Air). However it could work between any device that can display a video and any device that can capture that video and run a bit of software. So for example, you could communicate between a TV and a mobile phone &#8211; maybe to download a sample app while the advert is on?
+
+Also, theoretically, it has a moderately high transfer rate (for what it is):
+
+<p style="text-align:center;font-size:150%;">
+  15 FPS x ~2,953 bytes per frame = ~43 KB/s.
+</p>
+
+Comparable to a modem of old :)
+
+Now, the app as it is today is fairly cludgy, as you&#8217;d expect for something thrown together in the space of 5 hours, and so I&#8217;m not going to shove the code up here &#8211; yet. There&#8217;s a load of cool things I want to do first:
+
+  * Add video creation to the app &#8211; allowing you to select a file on the device for transfer.
+  * Use smarter encoding schemes and maybe data compression.
+  * Auto-stop & error checking &#8211; by adding information about how many frames should be in the data set.
+  * Harden the code &#8211; it has a unfortunate tendency to fall over with out of memory errors at the moment :)
+  * General UI improvements &#8211; creating one for a start.
+
+Who knows, I may even release it as an app on the marketplace.
+
+---
+
+*P.S. I did get some comments about the name. To be honest, I started with the Q & R and worked backwards from there; however I do argue that it&#8217;s quicker than scanning multiple QR codes separately and trying to put the stuff back together yourself.
+
+ [1]: http://overtheair.org/blog/
+ [2]: http://en.wikipedia.org/wiki/Bletchley_Park

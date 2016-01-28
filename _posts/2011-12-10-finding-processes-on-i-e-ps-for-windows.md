@@ -1,0 +1,58 @@
+---
+layout: post
+permalink: /finding-processes-on-windows
+alias: [/archives/542]
+
+title: Finding processes on (i.e. ps for) Windows
+author: Stephen Nicholas
+---
+As part of creating some test infrastructure for a work project the other day, I was looking for a good way to find any existing / leftover processes, so I could ensure things were in a clean state at the start of each test run. On Linux this is pretty easy, using ps, but I couldn&#8217;t find a good way to do it on Windows.
+
+There&#8217;s the [tasklist][1] command, which will output the following:  
+
+{% highlight java %}
+C:\Users\IBM_ADMIN>tasklist
+
+Image Name                     PID Session Name        Session#    Mem Usage
+========================= ======== ================ =========== ============
+System Idle Process              0 Services                   0         24 K
+System                           4 Services                   0      1,996 K
+smss.exe                       448 Services                   0      1,380 K
+...
+{% endhighlight %}
+
+And for most cases, that&#8217;s enough. But I was looking for a particular Java process and unfortunately I couldn&#8217;t tell which of the java.exe processes were the ones I was interested in and which were for something else &#8211; as tasklist doesn&#8217;t provide enough information (i.e. the launch parameters).
+
+After a fair bit of Googling (which I&#8217;m hoping to save someone), I came accross a pretty cool command line interface called WMIC ([Intro][2] & [Examples][3]) that&#8217;s immensely powerful for gathering information from Windows-based systems (and is installed by default since Windows 2000).
+
+It seems to do a whole load of stuff, but I was particularly interested in the process side of things and found that I could simply do:
+
+{% highlight java %}
+C:\Users\IBM_ADMIN>WMIC PROCESS GET Caption,Processid,Commandline
+
+Caption		CommandLine		ProcessId
+...
+java.exe 	java -Xmx128m -cp ".\lib;.\liblib\GAIANDB.jar;.\liblib\db2jcutdown.jar;.\liblib\derbyclient.jar;.\liblib\derby.jar;.\liblib\derbynet.jar;.\liblib\derbytrimmed.jar;.\liblib\wpml-pfg.jar;.\liblib\siapi.jar;.\liblib\esapi.jar;.\liblib\wmqtt.jar;C:\APPS\wpml-1.2\lib\wpml.jar;C:\APPS\wpml-1.2\lib\JSON4J.jar;C:\APPS\wpml-1.2\lib\arenatk.jar;C:\APPS\wpml-1.2\lib\antlr-2.7.7.jar;.\liblib\db2jcc.jar;.\liblib\db2jcc_license_cu.jar;.\liblib\ojdbc14.jar;.;C:\PROGRA~1\IBM\SQLLIB\java\db2java.zip;C:\PROGRA~1\IBM\SQLLIB\java\db2jcc.jar;C:\PROGRA~1\IBM\SQLLIB\java\sqlj.zip;C:\PROGRA~1\IBM\SQLLIB\java\db2jcc_license_cu.jar;C:\PROGRA~1\IBM\SQLLIB\bin;C:\PROGRA~1\IBM\SQLLIB\java\common.jar"  com.ibm.gaiandb.GaianNode 	7840
+...
+{% endhighlight %}
+
+Now, this spits out info for all running processes (I&#8217;ve **greatly** trimmed down the result above), but I then found you can also pass in <code>WHERE</code> commands to restrict things to exactly what you want. E.g.  
+
+{% highlight java %}
+C:\Users\IBM_ADMIN>WMIC PROCESS WHERE (CommandLine like '%com.ibm.gaiandb.GaianNode%' AND name='java.exe') GET processid
+
+ProcessId
+7840
+{% endhighlight %}
+
+Which I could then easily parse to get the info I wanted.
+
+Note: In the above examples, I&#8217;ve restricted the fields that are returned. If you don&#8217;t restrict the GET, the full list of things that is returned is:  
+
+{% highlight java %}
+Caption, CommandLine, CreationClassName, CreationDate, CSCreationClassName, CSName, Description, ExecutablePath, ExecutionState, Handle, HandleCount, InstallDate, KernelModeTime, MaximumWorkingSetSize, MinimumWorkingSetSize, Name, OSCreationClassName, OSName, OtherOperationCount, OtherTransferCount, PageFaults, PageFileUsage, ParentProcessId, PeakPageFileUsage, PeakVirtualSize, PeakWorkingSetSize, Priority, PrivatePageCount, ProcessId, QuotaNonPagedPoolUsage, QuotaPagedPoolUsage, QuotaPeakNonPagedPoolUsage, QuotaPeakPagedPoolUsage, ReadOperationCount, ReadTransferCount, SessionId, Status, TerminationDate, ThreadCount, UserModeTime, VirtualSize, WindowsVersion, WorkingSetSize WriteOperationCount, WriteTransferCount
+{% endhighlight %}
+
+ [1]: http://technet.microsoft.com/en-us/library/bb491010.aspx
+ [2]: http://technet.microsoft.com/en-us/library/bb742610.aspx
+ [3]: http://quux.wiki.zoho.com/WMIC-Snippets.html

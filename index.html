@@ -1,9 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>stephendnicholas.com</title>
-</head>
-<body>
-stephendnicholas.com
-</body>
-</html>
+---
+layout: default
+title: Homepage
+---
+
+<div id="home">
+  <div class="posts">
+    {% for post in paginator.posts %}
+      <section class="post_summary">
+        <h2 class="title"><a href="{{ post.url }}" rel="prefetch">{{ post.title }}</a></h2>
+        <p>{{ post.excerpt }}</p>
+        <p><a href="{{ post.url }}" rel="prefetch">Read more...</a></p>
+        <div class="meta">
+          <span>{{ post.author }}</span> &mdash;
+          <time pubdate datetime="{{ post.date | date: "%Y-%d-%B" }}" title="{{ post.date | date: "%b %d, %Y" }}">{{ post.date | date: "%b %d, %Y" }}</time> 
+        </div>
+        <hr>
+      </section>
+      {% endfor %}
+  </div>
+</div>
+
+{% if paginator.total_pages > 1 %}
+<div class="pagination">
+  {% if paginator.next_page %}
+  <a href="/posts/{{paginator.next_page}}" class="older">&laquo; Older</a>
+  {% else %}
+  <span class="next">Older</span>
+  {% endif %}
+  {% if paginator.previous_page %}
+    {% if paginator.page == 2 %}
+    <a href="/" class="newer">Newer &raquo;</a>
+    {% else %}
+    <a href="/posts/{{paginator.previous_page}}" class="newer">Newer &raquo;</a>
+    {% endif %}
+  {% else %}
+  <span class="previous">Newer</span>
+  {% endif %}
+</div>
+{% endif %}

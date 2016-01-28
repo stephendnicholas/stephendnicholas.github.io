@@ -1,0 +1,46 @@
+---
+layout: post
+permalink: /android-power-profiling
+alias: [/archives/202]
+
+title: Android Power Profiling
+author: Stephen Nicholas
+excerpt: Recently I’ve been looking into power profiling some Android applications and I thought I’d write up a quick post about my approach and the tools I used.
+---
+
+Recently I&#8217;ve been looking into power profiling some Android applications and I thought I’d write up a quick post about my approach and the tools I used.
+
+### Collecting the data from the device
+
+To capture the power usage data from the Android device, I used a free app called [PowerTutor][1]; which was created by the University of Michigan with support from Google.
+
+It’s a very simple app to use; basically you kick it off profiling and it records the power usage (mW) of each application running on the phone every second, categorised by: 3G, Audio, CPU, GPS, OLED and Wifi. When you’re done, you tell it to stop profiling and you can save the log file to the SD card. As summarised in the screenshots below:
+
+<div class="inline_imgs">
+<img src="{{ site.baseurl}}/assets/img/PowerTutor1.png" style="width:25%" /><img src="{{ site.baseurl}}/assets/img/PowerTutor2.png" style="width:25%" /><img src="{{ site.baseurl}}/assets/img/PowerTutor3.png" style="width:25%" /><img src="{{ site.baseurl}}/assets/img/PowerTutor4.png" style="width:25%" />
+</div>
+
+You can find the application on the Android marketplace and more information is available [here][1].
+
+Once you’ve captured the data, the next step is to get the log file off the device and (for those not familiar with the ADB command line) the simplest way is to plug your phone into a computer and then either mount it as a disk drive or use the ‘File Explorer’ view in an Android enabled Eclipse:
+
+<img src="{{ site.baseurl}}/assets/img/PT5.png" style="width:75%" />
+
+### Parsing the data
+
+As I mentioned earlier, the log file contains data on the power usage of each application running on the phone every second, categorised by: 3G, Audio, CPU, GPS, OLED and Wifi. 
+
+However, it’s not in an immediately useful form and so I wrote a simple parser application which you can [download from here][2] (Zip containing runnable Jar, including source).
+
+This takes the data and spits it out into a CSV file, which looks like this:
+
+<img src="{{ site.baseurl}}/assets/img/PT6.png" />
+
+Which you can then use to make pretty graphs, such as these of MQTT power usage when sending 1024 messages at different qualities of service (QoS) over Wifi:
+
+<img src="{{ site.baseurl}}/assets/img/PT8.png" />
+
+***Note:** I’ll be doing a write up of my MQTT findings in a bit for those who are interested.*
+
+ [1]: http://ziyang.eecs.umich.edu/projects/powertutor/index.html
+ [2]: {{ site.baseurl}}/assets/files/PowerTutorParser.zip

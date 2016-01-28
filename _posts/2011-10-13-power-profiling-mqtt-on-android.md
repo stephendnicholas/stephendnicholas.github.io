@@ -1,0 +1,1060 @@
+---
+title: 'Power Profiling: MQTT on Android'
+author: Stephen Nicholas
+excerpt: "While most people who've used MQTT know that it uses extremely low amounts of power on mobile devices, I couldn't find any definitive power figures and so I thought I'd try collecting some. This post details what I did &amp; the results I found."
+layout: post
+permalink: /archives/219
+categories:
+  - Android
+  - Tech
+tags:
+  - android
+  - mqtt
+  - power
+  - profiling
+---
+# Introduction
+
+<div class="linebreak">
+</div>
+
+Recently I&#8217;ve been doing a lot with [MQTT][1] on Android, in particular because it&#8217;s such a good fit. Not only can it be used to provide immediate push notification capability, but it also provides low latency, guaranteed messaging over fragile networks and efficient distribution to one or many receivers. Even better, it does all this with small message sizes (minimising the amount of bytes flowing over the wire) and low power usage.
+
+The other great thing about MQTT is that there&#8217;s loads of information about it on the web. The specification is fully available, it&#8217;s [about to be an open standard][2] and it&#8217;s also been fairly well adopted by the hobby & hacker crowd, so there&#8217;s loads of blogs and tutorials all about it.
+
+One thing I have noticed though, is that, while most people who&#8217;ve used MQTT know that it uses extremely low amounts of power on mobile devices, I couldn&#8217;t find any definitive power figures. It&#8217;s mostly just anecdotal evidence, and so I thought I&#8217;d try collecting some. This post details what I did & the results I found.
+
+### What was I testing?
+
+Basically it&#8217;s a very simple application that calls a custom Android wrapper around a standard Java MQTT client offered by IBM (the one that currently ships with WebSphere MQ Telemetry, for those in the know). All the MQTT work is done in it&#8217;s own thread and messages flow in and out between this and the test application through [`Handlers`][3]. It&#8217;s not really worthy of a screenshot, but if you&#8217;re really keen, you can find one [here][4].
+
+The custom wrapper is one that I&#8217;ve created for some things I&#8217;ve been doing at work, so unfortunately I&#8217;m not able to post the code (right now); but if you imagine a couple of [`Handlers`][3] for getting messages in and out, an [`Alarm Manager`][5] for sending Keep-Alives and some special error handling, you wouldn&#8217;t be far wrong.
+
+### How did I test it?
+
+I&#8217;ve written up a separate [post here][6] on the generic approach I used to capture and process the power usage data. In terms of specifics for this testing, I used the Android application described above along with a simple desktop application that was used to send data to / receive data from the Android application. The tests were kicked off manually by myself, either by clicking a button in the Android app or by starting a process in the desktop application, but the timing of events was captured automatically &#8211; which allowed me to normalise for any delays from me starting things off.
+
+### Caveats / Specifics
+
+  * The power profiling was performed on my HTC Desire, running Android 2.2 &#8211; Build 2.33.161.2 CL284385.
+  * Throughout this article I refer to the power usage in terms of % Battery / Hour. This refers to the % of the fully charged capacity of my phone&#8217;s battery that is used per hour. My phone has a standard Li-Ion battery that is rated at: 1400mAh & 3.7V.
+  * The tool I used to capture the power usage data ([PowerTutor][7]) uses real data, combined with a power usage model for some aspects. This model has been tailored against the type of device I used for this testing and is reported to be accurate to within 0.8% on average, with a 2.5% margin of error. If you&#8217;re interested, you can find out more [here][8].
+  * I&#8217;ve tried my best to produce correct, consistent and usable results; however I am human and so there&#8217;s a chance I have made mistakes somewhere. As such, these figures shouldn&#8217;t be treated as Gospel, but I would expect them to be representative of what you could expect to see.
+
+<div class="linebreak">
+</div>
+
+# Results
+
+<div class="linebreak">
+</div>
+
+## Keep Alive
+
+The first thing I tested was how much power does it take to simply maintain an open MQTT connection, with no messages flowing over the wire. To do this, the MQTT client needs to send a keep-alive message every so often to maintain the connection channel and also to let the server know it&#8217;s still connected. I tried a number of different keep-alive intervals and the results are summarised in the table below:
+
+<table style="text-align:center;margin-left:auto;margin-right:auto;">
+  <tr>
+    <th>
+    </th>
+    
+    <th colspan="2" style="background-color:#E6E6FA;">
+      % Battery / Hour
+    </th>
+  </tr>
+  
+  <tr>
+    <th style="width:7em;background-color:#E6E6FA;">
+      Keep Alive<br />(Seconds)
+    </th>
+    
+    <th style="width:6em;background-color:#F8E7B2;">
+      3G
+    </th>
+    
+    <th style="width:6em;background-color:#F8E7B2;">
+      Wifi
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+      60
+    </td>
+    
+    <td>
+      0.77641278
+    </td>
+    
+    <td>
+      0.0119021
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      120
+    </td>
+    
+    <td>
+      0.38884457
+    </td>
+    
+    <td>
+      0.0062861
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      240
+    </td>
+    
+    <td>
+      0.15568461
+    </td>
+    
+    <td>
+      0.00283991
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      480
+    </td>
+    
+    <td>
+      0.07792208
+    </td>
+    
+    <td>
+      0.00134018
+    </td>
+  </tr>
+</table>
+
+&nbsp;  
+As you can see, the figures are fantastically low. 3G is probably of the most interest to people, and, even with a relatively short keep-alive interval of 60 seconds, it only costs ~0.8% of the phone&#8217;s battery per hour to maintain an open connection; with immediate push notification capability (one of the big selling points of MQTT on Android). And it&#8217;s an inverse relationship after that &#8211; with a doubling of the keep-alive interval, halving the battery usage.
+
+Personally, I tend to go for a keep-alive interval of 240 seconds; which provides timely detection of the disconnection of the client/server balanced against suitably low power usage (~0.16% per hour on 3G).
+
+*As a brief aside:* It was suggested to me that some mobile providers will purge a 3G TCP/IP connection if there&#8217;s no activity on it for over 10 minutes, however I did try a keep-alive interval of 960 seconds (16 minutes) and everything seemed to behave correctly. Though I guess this could be provider specific (I&#8217;m with Vodafone).
+
+## Sending
+
+The next thing I looked at was sending messages from the phone. I found it somewhat difficult to get sensible & consistent figures for sending a single message and so I decided to scale up to sending 1024 messages, of 1 byte a piece, as quickly as possible. This also helped to emphasise the difference between the different Qualities of Service (QoS &#8211; assured delivery level). The results are shown in the graphs below:
+
+<p style="text-align:center">
+  <i>Note: You can click & drag on an area of the graph to zoom to it. Single click anywhere to zoom back out.</i>
+</p>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; Send 1024 x 1 byte messages &#8211; Total mW</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_Send" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; Send 1024 x 1 byte messages &#8211; Total mW</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_Send" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+As you can see, the QoS 0 messages complete the fastest, followed by the QoS 1 and then the QoS 2. This is because the higher the Quality of Service, the more reliable the message delivery, and this has an associated overhead and delay; as it requires additional messages to flow between the client and server to confirm delivery.
+
+Unfortunately this makes it kind of hard to compare the different levels for battery usage, as QoS 0 uses more power per second (most of this is made up of CPU usage), but for a short amount of time, whereas QoS 1 & QoS 2 use much less power per second, but each for much longer. However, if we use a certain amount of poetic licence, we can extrapolate from the data to say how much battery would it cost to send continuously at each level for an hour, how many message would be sent in this time and from that get the comparative battery cost per message<a href="#BatteryPerMessageDisclaimer" style="background:none;">*</a>, which I&#8217;ve outlined in the tables below:
+
+<h4 style="text-align: center;">
+  <b>3G</b>
+</h4>
+
+<table style="text-align:center;margin-left:auto;margin-right:auto;">
+  <tr>
+    <th style="width:7em;background-color:#E6E6FA;">
+      QoS
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      Messages / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Message <a href="#BatteryPerMessageDisclaimer" style="background:none;">*</a>
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 0
+    </td>
+    
+    <td>
+      15.12
+    </td>
+    
+    <td>
+      614400
+    </td>
+    
+    <td>
+      0.000025
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 1
+    </td>
+    
+    <td>
+      16.87
+    </td>
+    
+    <td>
+      23938
+    </td>
+    
+    <td>
+      0.000705
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 2
+    </td>
+    
+    <td>
+      17.66
+    </td>
+    
+    <td>
+      15489
+    </td>
+    
+    <td>
+      0.001140
+    </td>
+  </tr>
+</table>
+
+<h4 style="text-align: center;">
+  <b>Wifi</b>
+</h4>
+
+<table style="text-align:center;margin-left:auto;margin-right:auto;">
+  <tr>
+    <th style="width:7em;background-color:#E6E6FA;">
+      QoS
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      Messages / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Message <a href="#BatteryPerMessageDisclaimer" style="background:none;">*</a>
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 0
+    </td>
+    
+    <td>
+      2.02
+    </td>
+    
+    <td>
+      368640
+    </td>
+    
+    <td>
+      0.000005
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 1
+    </td>
+    
+    <td>
+      0.93
+    </td>
+    
+    <td>
+      26144
+    </td>
+    
+    <td>
+      0.000036
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 2
+    </td>
+    
+    <td>
+      0.89
+    </td>
+    
+    <td>
+      13704
+    </td>
+    
+    <td>
+      0.000065
+    </td>
+  </tr>
+</table>
+
+<a name="BatteryPerMessageDisclaimer" style="background:none;">&nbsp;</a>  
+* &#8211; This is a bit of a silly metric. Firstly, you wouldn&#8217;t tend to use MQTT like this, it&#8217;s more focused on providing an open channel for push notification and a more sporadic style of message sending & receiving. Secondly, there is a fixed cost in having the Wifi or 3G active and so the actual cost of just sending a single message would be higher. However these figures do serve to indicate the difference between the three qualities of service and hopefully give you an indication of the battery usage involved.
+
+If you&#8217;re interested in seeing how the power usage breaks down into the different categories (CPU & 3G/Wifi) you can [click here][9] for some more pretty graphs.
+
+## Receiving
+
+After sending, the next thing I looked at was receiving messages on the phone. To be consistent with the sending results, I sent 1024 messages, of 1 byte a piece, to the phone, as quickly as possible. The results are shown in the graphs below:
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; Receive 1024 x 1 byte messages &#8211; Total mW</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_R" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; Receive 1024 x 1 byte messages &#8211; Total mW</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_R" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+Again we can see that the QoS 0 messages complete the fastest, followed by the QoS 1 and then QoS 2 (for the same reasons mentioned above). It takes slightly longer for all the messages to be received and so the power per second for each QoS is much more comparable, as the CPU load is spread out. However, to be consistent, I have extrapolated the data as before into the tables below.
+
+A couple of other things of notice are the two erroneous patterns in the QoS 2 flows. For 3G we see the message receiving stop for about 20 seconds before continuing, and for Wifi we briefly see a large spike in power usage about half way through. Unfortunately I don&#8217;t have anything to explain this, the connection doesn&#8217;t drop and there&#8217;s nothing immediately obvious. I&#8217;m going to repeat these tests when I get time and I expect this will turn out to be a one off anomaly, but for the moment I thought you might appreciate the experimental authenticity :)
+
+<h4 style="text-align: center;">
+  <b>3G</b>
+</h4>
+
+<table style="text-align:center;margin-left:auto;margin-right:auto;">
+  <tr>
+    <th style="width:7em;background-color:#E6E6FA;">
+      QoS
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      Messages / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Message <a href="#BatteryPerMessageDisclaimer" style="background:none;">*</a>
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 0
+    </td>
+    
+    <td>
+      16.03
+    </td>
+    
+    <td>
+      35446
+    </td>
+    
+    <td>
+      0.000452
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 1
+    </td>
+    
+    <td>
+      17.48
+    </td>
+    
+    <td>
+      27510
+    </td>
+    
+    <td>
+      0.000635
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 2
+    </td>
+    
+    <td>
+      15.80
+    </td>
+    
+    <td>
+      13552
+    </td>
+    
+    <td>
+      0.001166
+    </td>
+  </tr>
+</table>
+
+<h4 style="text-align: center;">
+  <b>Wifi</b>
+</h4>
+
+<table style="text-align:center;margin-left:auto;margin-right:auto;">
+  <tr>
+    <th style="width:7em;background-color:#E6E6FA;">
+      QoS
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      Messages / Hour
+    </th>
+    
+    <th style="width:6em;background-color:#E6E6FA;">
+      % Battery / Message <a href="#BatteryPerMessageDisclaimer" style="background:none;">*</a>
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 0
+    </td>
+    
+    <td>
+      0.59
+    </td>
+    
+    <td>
+      64673
+    </td>
+    
+    <td>
+      0.000009
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 1
+    </td>
+    
+    <td>
+      0.70
+    </td>
+    
+    <td>
+      32914
+    </td>
+    
+    <td>
+      0.000021
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      QoS 2
+    </td>
+    
+    <td>
+      0.86
+    </td>
+    
+    <td>
+      17226
+    </td>
+    
+    <td>
+      0.000050
+    </td>
+  </tr>
+</table>
+
+<p style="margin-top:1.5em">
+  Again, if you&#8217;re interested in seeing how the power usage breaks down into the different categories (CPU & 3G/Wifi) you can find them by <a href="http://stephendnicholas.com/?p=219&page=3">clicking here</a>.
+</p>
+
+## Connect & Wait
+
+Finally, I thought I&#8217;d just briefly include a couple of graphs showing the general shape of creating a connection and leaving it running in the background (i.e. the initial connect and subsequent keep-alives, with a 60 seconds keep-alive interval):
+
+<p style="text-align:center">
+  <i>Note: These are stacked graphs. CPU on top of 3G / Wifi.</i>
+</p>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; Connect & Wait</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_CW" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; Connect & Wait</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_CW" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="linebreak">
+</div>
+
+# What next?
+
+<div class="linebreak">
+</div>
+
+This has been a relatively shallow foray into power profiling MQTT on Android and now I&#8217;ve done it I can think of a whole host of other things that I&#8217;m interested in doing. Things such as:
+
+  * Testing the effect of message size on sending & receiving.
+  * Testing power usage when running on fragile networks that keep dropping & being re-established.
+  * Testing more realistic usage scenarios &#8211; e.g. messages flowing much more sparsely and/or at less predictable intervals.
+  * Comparing MQTT with it&#8217;s possible alternatives, e.g. HTTP, C2DM, etc. Although it may be difficult to create a scenario where they all do the same thing so that they can be measured equally.
+  * Open sourcing the code I&#8217;ve created &#8211; this is something I need to figure out with work, but, if possible, I&#8217;d love to get the code I used out there. Not only because I think people would find it really useful to have an Android MQTT component they could just drop into their projects, but also so that people could repeat the tests I&#8217;ve done here and try out new scenarios they&#8217;ve thought up themselves.
+
+Just need to find the time :)
+
+<div class="linebreak">
+</div>
+
+So, hopefully you found that interesting and maybe useful. If you have any comments, questions or suggestions, I&#8217;d be happy to hear them &#8211; but please do keep in mind the things I mentioned in the Caveats section above :)
+
+*Note: the next two pages just contain some additional graphs of power usage broken down by category.* 
+
+<link href="/blog_misc/jquery/jquery-ui-1.8.14.custom.css" rel="stylesheet" type="text/css" />
+
+  
+<!--nextpage-->
+
+# Sending &#8211; Additional Graphs
+
+<div class="linebreak">
+</div>
+
+<p style="text-align:center">
+  <i>Note: These are stacked graphs. CPU on top of 3G / Wifi.</i>
+</p>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; QoS 0</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_S_0" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; QoS 1</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_S_1" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; QoS 2</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_S_2" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; QoS 0</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_S_0" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; QoS 1</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_S_1" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; QoS 2</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_S_2" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<link href="/blog_misc/jquery/jquery-ui-1.8.14.custom.css" rel="stylesheet" type="text/css" />
+
+  
+<!--nextpage--></p> 
+
+# Receiving &#8211; Additional Graphs
+
+<div class="linebreak">
+</div>
+
+<p style="text-align:center">
+  <i>Note: These are stacked graphs. CPU on top of 3G / Wifi.</i>
+</p>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; QoS 0</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_R_0" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; QoS 1</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_R_1" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>3G &#8211; QoS 2</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_3G_R_2" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; QoS 0</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_R_0" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; QoS 1</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_R_1" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4 style="text-align: center;">
+  <b>Wifi &#8211; QoS 2</b>
+</h4>
+
+<div id="noCellBorder">
+  <table style="padding:0.5em;padding-right:3em;">
+    <tr>
+      <td style="-webkit-transform: rotate(-90deg); font-weight:bold;">
+        mW
+      </td>
+      
+      <td>
+        <div id="_W_R_2" style="width:550px;height:300px;">
+        </div>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+      </td>
+      
+      <td style="text-align:center; font-weight:bold;">
+        1 second period
+      </td>
+    </tr>
+  </table>
+</div>
+
+<link href="/blog_misc/jquery/jquery-ui-1.8.14.custom.css" rel="stylesheet" type="text/css" />
+
+ [1]: http://mqtt.org/
+ [2]: http://mqtt.org/2011/08/open-invitation-to-join-the-mqtt-standardization-discussion
+ [3]: http://developer.android.com/reference/android/os/Handler.html
+ [4]: http://stephendnicholas.com/wp-content/uploads/2011/10/mpp-test-app.png
+ [5]: http://developer.android.com/reference/android/app/AlarmManager.html
+ [6]: http://stephendnicholas.com/archives/202 "Android Power Profiling"
+ [7]: http://ziyang.eecs.umich.edu/projects/powertutor/index.htm;
+ [8]: http://ziyang.eecs.umich.edu/projects/powertutor/camera-ready.pdf
+ [9]: http://stephendnicholas.com/?p=219&page=2

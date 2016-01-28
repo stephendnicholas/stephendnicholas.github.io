@@ -1,0 +1,30 @@
+---
+layout: default
+---
+
+<section class="single-wrap">
+  <article class="single-content" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="feat">
+      <h5 class="page-date">
+        <time datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
+          {{ page.date | date_to_long_string }}
+        </time>
+      </h5>
+    </div>
+    <h1 class="page-title" itemprop="name headline">{{ page.title }}</h1>
+    <div itemprop="articleBody">
+      {{ content }}
+    </div>
+    
+    <div class="share-title">Share via</div>
+    
+    <div class="feat share">
+      <a href="http://twitter.com/share?text={{page.title}} - " class="popup">
+        <span class="icon-twitter"></span>
+      </a>
+    </div>
+    
+    {% include disqus.html %}
+    
+  </article>
+</section>

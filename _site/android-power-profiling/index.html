@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+      <title>stephendnicholas.com</title>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <meta http-equiv="content-language" content="en-gb" />
+      <meta name="description" content="tech blog">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+      <link href="//fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" type="text/css" href="/css/main.css" />
+      <link href="atom.xml" type="application/atom+xml" rel="alternate" title="Site ATOM Feed">
+  </head>
+
+  <body>
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    <![endif]-->
+
+    <div class="off-canvas">
+      <figure class="avatar">
+        <img src="/assets/img/avatar.jpg" alt="Picture" title="That's me, Stephen Nicholas.">
+      </figure>
+      <div class="bio">
+          <h1>Hi, I'm Stephen Nicholas.</h1>
+          <p>And this is my blog. I'm a software engineer by trade (but mostly for fun) with a wide variety of experience and interests. Some of which I'll write about here.</p>
+      </div>
+      <nav>
+        <h6>Look me up on</h6>
+        <ul>
+          
+          <li><a href="https://twitter.com/sd_nicholas">Twitter</a></li>
+          
+          
+          <li><a href="https://github.com/stephendnicholas">Github</a></li>
+          
+          
+          <li><a href="https://www.linkedin.com/in/stephendnicholas">LinkedIn</a></li>
+          
+        </ul>
+      </nav>
+    </div>
+
+
+    <div class="site-wrapper">
+
+      <header>
+        <div class="h-wrap">
+          <h1 class="title"><a href="/" title="Back to Homepage">stephendnicholas.com</a></h1>
+          <a class="menu-icon" title="Open Bio"><span class="lines"></span></a>
+        </div>
+      </header>
+
+      <main>
+        <section class="single-wrap">
+  <article class="single-content" itemscope itemtype="http://schema.org/BlogPosting">
+    <div class="feat">
+      <h5 class="page-date">
+        <time datetime="2011-09-26T00:00:00-06:00" itemprop="datePublished">
+          26 September 2011
+        </time>
+      </h5>
+    </div>
+    <h1 class="page-title" itemprop="name headline">Android Power Profiling</h1>
+    <div itemprop="articleBody">
+      <p>Recently I’ve been looking into power profiling some Android applications and I thought I’d write up a quick post about my approach and the tools I used.</p>
+
+<h3 id="collecting-the-data-from-the-device">Collecting the data from the device</h3>
+
+<p>To capture the power usage data from the Android device, I used a free app called <a href="http://ziyang.eecs.umich.edu/projects/powertutor/index.html">PowerTutor</a>; which was created by the University of Michigan with support from Google.</p>
+
+<p>It’s a very simple app to use; basically you kick it off profiling and it records the power usage (mW) of each application running on the phone every second, categorised by: 3G, Audio, CPU, GPS, OLED and Wifi. When you’re done, you tell it to stop profiling and you can save the log file to the SD card. As summarised in the screenshots below:</p>
+
+<div class="inline_imgs">
+<img src="/assets/img/PowerTutor1.png" style="width:25%" /><img src="/assets/img/PowerTutor2.png" style="width:25%" /><img src="/assets/img/PowerTutor3.png" style="width:25%" /><img src="/assets/img/PowerTutor4.png" style="width:25%" />
+</div>
+
+<p>You can find the application on the Android marketplace and more information is available <a href="http://ziyang.eecs.umich.edu/projects/powertutor/index.html">here</a>.</p>
+
+<p>Once you’ve captured the data, the next step is to get the log file off the device and (for those not familiar with the ADB command line) the simplest way is to plug your phone into a computer and then either mount it as a disk drive or use the ‘File Explorer’ view in an Android enabled Eclipse:</p>
+
+<p><img src="/assets/img/PT5.png" style="width:75%" /></p>
+
+<h3 id="parsing-the-data">Parsing the data</h3>
+
+<p>As I mentioned earlier, the log file contains data on the power usage of each application running on the phone every second, categorised by: 3G, Audio, CPU, GPS, OLED and Wifi. </p>
+
+<p>However, it’s not in an immediately useful form and so I wrote a simple parser application which you can <a href="/assets/files/PowerTutorParser.zip">download from here</a> (Zip containing runnable Jar, including source).</p>
+
+<p>This takes the data and spits it out into a CSV file, which looks like this:</p>
+
+<p><img src="/assets/img/PT6.png" /></p>
+
+<p>Which you can then use to make pretty graphs, such as these of MQTT power usage when sending 1024 messages at different qualities of service (QoS) over Wifi:</p>
+
+<p><img src="/assets/img/PT8.png" /></p>
+
+<p><em><strong>Note:</strong> I’ll be doing a write up of my MQTT findings in a bit for those who are interested.</em></p>
+
+
+    </div>
+    
+    <div class="share-title">Share via</div>
+    
+    <div class="feat share">
+      <a href="http://twitter.com/share?text=Android Power Profiling - " class="popup">
+        <span class="icon-twitter"></span>
+      </a>
+    </div>
+    
+    <div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = '//stephendnicholas.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+    
+  </article>
+</section>
+
+      </main>
+
+      <footer>
+        <small>&copy; Stephen Nicholas, 2011 &ndash; 2016 </small>
+      </footer>
+
+    </div>
+    
+
+    <script src="/js/main.js"></script>
+    
+    
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-72835313-1', 'stephendnicholas.com');
+        ga('send', 'pageview');
+      </script>
+    
+
+  </body>
+</html>
