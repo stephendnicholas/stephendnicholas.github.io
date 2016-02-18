@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /linked-in-formatting
-alias: [/archives/1745]
+permalink: /posts/linked-in-formatting
+redirect_from: /archives/1745/
 
 title: 'LinkedIn-dentation &#038; Formatting'
 author: Stephen Nicholas

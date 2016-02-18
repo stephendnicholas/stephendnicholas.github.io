@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /android-handlerthread
-alias: [/archives/42]
+permalink: /posts/android-handlerthread
+redirect_from: /archives/42/
 
 title: How to use the Android HandlerThread
 author: Stephen Nicholas

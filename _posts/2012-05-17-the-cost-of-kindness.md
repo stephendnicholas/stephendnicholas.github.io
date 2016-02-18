@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /the-cost-of-kindness
-alias: [/archives/1106]
+permalink: /posts/the-cost-of-kindness
+redirect_from: /archives/1106/
 
 title: The Cost of Kindness
 author: Stephen Nicholas

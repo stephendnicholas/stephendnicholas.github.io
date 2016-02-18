@@ -121,6 +121,17 @@ The next thing I looked at was sending messages from the phone. I found it somew
   <b>3G &#8211; Send 1024 x 1 byte messages &#8211; Total mW</b>
 </h4>
 
+<style>
+.flot {
+font-family: "Open Sans", sans-serif;
+font-size: 0.8em;
+}
+.legend table {
+	border-spacing: 5px;
+	font-size: 4em;
+}
+</style>
+
 <div class="flot">
   <table style="padding:0.5em;">
     <tr>
@@ -951,13 +962,6 @@ So, hopefully you found that interesting and maybe useful. If you have any comme
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.selection.min.js"></script>
 
 <script language="javascript" type="text/javascript" src="{{ site.baseurl }}/assets/misc/mqtt-power-profiling-results.js"></script>
-
-<style>
-.flot {
-  font-family: "Open Sans", sans-serif;
-  font-size: 0.8em;
-}
-</style>
 
  [1]: http://mqtt.org/
  [2]: http://mqtt.org/2011/08/open-invitation-to-join-the-mqtt-standardization-discussion

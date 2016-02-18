@@ -4,7 +4,12 @@ title: Homepage
 ---
 
 <div id="home">
-  <div class="posts">
+  <div class="posts single-wrap">
+    <div class="feat" style="margin-left: 3.5em; margin-right: 3.5em;">
+      <h5 class="page-date">
+        Posts
+      </h5>
+    </div>
     {% for post in paginator.posts %}
       <section class="post_summary">
         <h2 class="title"><a href="{{ post.url }}" rel="prefetch">{{ post.title }}</a></h2>
@@ -23,7 +28,7 @@ title: Homepage
 {% if paginator.total_pages > 1 %}
 <div class="pagination">
   {% if paginator.next_page %}
-  <a href="/posts/{{paginator.next_page}}" class="older">&laquo; Older</a>
+  <a href="/all/{{paginator.next_page}}" class="older">&laquo; Older</a>
   {% else %}
   <span class="next">Older</span>
   {% endif %}
@@ -31,7 +36,7 @@ title: Homepage
     {% if paginator.page == 2 %}
     <a href="/" class="newer">Newer &raquo;</a>
     {% else %}
-    <a href="/posts/{{paginator.previous_page}}" class="newer">Newer &raquo;</a>
+    <a href="/all/{{paginator.previous_page}}" class="newer">Newer &raquo;</a>
     {% endif %}
   {% else %}
   <span class="previous">Newer</span>

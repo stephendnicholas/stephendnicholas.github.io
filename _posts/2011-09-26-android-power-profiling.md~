@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /android-power-profiling
-alias: [/archives/202]
+redirect_from: /archives/202/
 
 title: Android Power Profiling
 author: Stephen Nicholas
@@ -39,8 +39,6 @@ This takes the data and spits it out into a CSV file, which looks like this:
 Which you can then use to make pretty graphs, such as these of MQTT power usage when sending 1024 messages at different qualities of service (QoS) over Wifi:
 
 <img src="{{ site.baseurl}}/assets/img/PT8.png" />
-
-[<img class="alignnone size-full wp-image-210" title="PT8" src="http://stephendnicholas.com/wp-content/uploads/2011/09/PT8.png" alt="" width="757" height="426" />][9]
 
 ***Note:** I’ll be doing a write up of my MQTT findings in a bit for those who are interested.*
 

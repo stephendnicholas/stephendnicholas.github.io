@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /a-simple-ssl-enabled-comet-server-in-node
-alias: [/archives/1131]
+permalink: /posts/a-simple-ssl-enabled-comet-server-in-node
+redirect_from: /archives/1131/
 
 title: A simple SSL enabled Comet style Pub/Sub server with Node.js
 author: Stephen Nicholas

@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /quicker-video-qr-codes
-alias: [/archives/310]
+permalink: /posts/quicker-video-qr-codes
+redirect_from: /archives/310/
 
 title: 'QuickeR: Using video QR codes to transfer data'
 author: Stephen Nicholas

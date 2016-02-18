@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /android-removing-the-green-onclick-border
-alias: [/archives/1428]
+permalink: /posts/android-removing-the-green-onclick-border
+redirect_from: /archives/1428/
 
 title: 'Android: Removing the green onclick border'
 author: Stephen Nicholas

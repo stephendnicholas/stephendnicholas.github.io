@@ -5,7 +5,6 @@ header {
 
 .h-wrap {
   @extend %padding-large;
-  text-align:center;
 
   h1.title {
     @extend h3;

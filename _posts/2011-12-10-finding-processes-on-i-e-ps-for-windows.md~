@@ -1,12 +1,12 @@
 ---
 layout: post
 permalink: /finding-processes-on-windows
-alias: [/archives/542]
+redirect_from: /archives/542/
 
 title: Finding processes on (i.e. ps for) Windows
 author: Stephen Nicholas
 ---
-As part of creating some test infrastructure for a work project the other day, I was looking for a good way to find any existing / leftover processes; so I could ensure things were in a clean state at the start of each test run. On Linux this is pretty easy, using ps, but I couldn&#8217;t find a good way to do it on Windows.
+As part of creating some test infrastructure for a work project the other day, I was looking for a good way to find any existing / leftover processes, so I could ensure things were in a clean state at the start of each test run. On Linux this is pretty easy, using ps, but I couldn&#8217;t find a good way to do it on Windows.
 
 There&#8217;s the [tasklist][1] command, which will output the following:  
 

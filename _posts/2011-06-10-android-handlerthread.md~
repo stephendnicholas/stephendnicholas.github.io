@@ -1,9 +1,9 @@
 ---
 layout: post
 permalink: /android-handlerthread
-alias: [/archives/42]
+redirect_from: /archives/42/
 
-title: How to Use the Android HandlerThread
+title: How to use the Android HandlerThread
 author: Stephen Nicholas
 excerpt: Today I'm going to talk about something I ran into recently that turned out to be very simple, despite initially seeming a little confusing, the Android <a href="http://developer.android.com/reference/android/os/HandlerThread.html"><code>HandlerThread</code></a> class.
 

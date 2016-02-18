@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /eclipse-quick-line-count
-alias: [/archives/109]
+permalink: /posts/eclipse-quick-line-count
+redirect_from: /archives/109/
 
 title: Eclipse quick line count
 author: Stephen Nicholas

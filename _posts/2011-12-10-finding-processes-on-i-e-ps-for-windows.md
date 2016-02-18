@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /finding-processes-on-windows
-alias: [/archives/542]
+permalink: /posts/finding-processes-on-windows
+redirect_from: /archives/542/
 
 title: Finding processes on (i.e. ps for) Windows
 author: Stephen Nicholas

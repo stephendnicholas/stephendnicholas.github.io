@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /android-attaching-files-from-internal-cache-to-gmail
-alias: [/archives/974]
+permalink: /posts/android-attaching-files-from-internal-cache-to-gmail
+redirect_from: /archives/974/
 
 title: 'Android: Attaching files from internal cache to Gmail'
 author: Stephen Nicholas

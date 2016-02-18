@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /android-power-profiling
-alias: [/archives/202]
+permalink: /posts/android-power-profiling
+redirect_from: /archives/202/
 
 title: Android Power Profiling
 author: Stephen Nicholas

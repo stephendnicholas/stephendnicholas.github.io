@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /a-simple-ssl-enabled-comet-server-in-node
-alias: [/archives/1131]
+redirect_from: /archives/1131/
 
 title: A simple SSL enabled Comet style Pub/Sub server with Node.js
 author: Stephen Nicholas
@@ -217,9 +217,11 @@ https.createServer(options, function (req, res) {
         }
         
         //Send response to the publish request 
-        res.writeHead(200, {'Content-type':'text/plain'}); res.end(); }); 
-      }
-    } 
+        res.writeHead(200, {'Content-type':'text/plain'}); 
+        res.end(); 
+      }); 
+    }
+  } 
   //Else not supported path 
   else { 
     console.log(' Not Found'); 

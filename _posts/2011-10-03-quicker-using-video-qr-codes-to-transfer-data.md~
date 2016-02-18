@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /quicker-video-qr-codes
-alias: [/archives/310]
+redirect_from: /archives/310/
 
 title: 'QuickeR: Using video QR codes to transfer data'
 author: Stephen Nicholas
@@ -94,7 +94,7 @@ Who knows, I may even release it as an app on the marketplace.
 
 ---
 
-*P.S. I did get some comments about the name. To be honest, I started with the Q & R and worked backwards from there; however I do argue that it&#8217;s quicker than scanning multiple QR codes separately and trying to put the stuff back together yourself.*
+*P.S. I did get some comments about the name. To be honest, I started with the Q & R and worked backwards from there; however I do argue that it&#8217;s quicker than scanning multiple QR codes separately and trying to put the stuff back together yourself.
 
  [1]: http://overtheair.org/blog/
  [2]: http://en.wikipedia.org/wiki/Bletchley_Park

@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /eclipse-quick-line-count
-alias: [/archives/109]
+redirect_from: /archives/109/
 
 title: Eclipse quick line count
 author: Stephen Nicholas
@@ -37,4 +37,3 @@ Here&#8217;s a couple of other regexs that I found useful for reducing the above
 `^\s*\n` &#8211; search for blank lines.
 
  [1]: http://www.binaryfrost.com/index.php?/archives/207-Easy-way-to-count-Lines-of-Code-in-Eclipse.html
- [2]: http://stephendnicholas.com/wp-content/uploads/2011/06/search_results.png

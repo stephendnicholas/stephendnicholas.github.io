@@ -35,6 +35,7 @@
   }
 
   .page-date {
+    margin-top: 0;
     display: inline-block;
     position: relative;
     top: 1.1em;
@@ -121,6 +122,33 @@
      margin-left: 0;
      margin-right: 0px;
      padding-right: 5px; 
+    }
+  }
+
+  .html_table {
+    border: 1px solid black;
+    text-align:center;
+    margin-left:auto;
+    margin-right:auto;
+    
+    th, td {
+      border: 1px solid black;
+      padding-top: 14px;
+      padding-bottom: 14px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+    
+    .header {
+      background-color:#E6E6FA;
+    }
+    
+    .sub_header {
+      background-color:#F8E7B2;
+    }
+    
+    .sub_sub_header {
+      background-color:#f0fae6;
     }
   }
 

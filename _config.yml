@@ -19,12 +19,23 @@ permalink: pretty
 highlighter: pygments
 
 paginate: 10
-paginate_path: "/posts/:num"
+paginate_path: "/all/:num"
 
 # SCSS
 sass:
   sass_dir: _scss
   style: :compressed
   
-safe: false
+gems:
+  - jekyll-redirect-from
 
+whitelist:
+  - jekyll-redirect-from
+  
+# Exclude these files from production _site
+exclude:
+    - Gemfile
+    - Gemfile.lock
+    - LICENSE
+    - README.md
+    - CNAME

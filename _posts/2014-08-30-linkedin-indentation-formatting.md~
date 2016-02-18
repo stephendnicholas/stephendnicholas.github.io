@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /linked-in-formatting
-alias: [/archives/1745]
+redirect_from: /archives/1745/
 
 title: 'LinkedIn-dentation &#038; Formatting'
 author: Stephen Nicholas
@@ -24,6 +24,6 @@ Eventually I found one that worked, the humble &#8216;<a href="http://www.filefo
 
 Not ideal I&#8217;ll admit, but definitely better than this:
 
-<img src="http://stephendnicholas.com/wp-content/uploads/2014/08/linkedinbadformat.png" width="600" class="alignright size-full wp-image-1747" />
+<img src="{{ site.baseurl}}/assets/img/linkedinbadformat.png" />
 
 And until LinkedIn eventually catch up to the needs of their users, it will have to do.

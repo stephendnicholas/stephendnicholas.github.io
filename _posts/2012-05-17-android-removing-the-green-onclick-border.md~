@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /android-removing-the-green-onclick-border
-alias: [/archives/1428]
+redirect_from: /archives/1428/
 
 title: 'Android: Removing the green onclick border'
 author: Stephen Nicholas
@@ -31,11 +31,11 @@ For example, so that:
 {% highlight html %}
 <!DOCTYPE html>  
 <html>  
-<head>  
-</head>  
-<body>  
-<a href=&#8221;#&#8221; style=&#8221;font-size:4em;&#8221;>Annoying!</a>  
-</body>  
+  <head>  
+  </head>  
+  <body>  
+    <a href="" style="font-size:4em;">Annoying!</a>  
+  </body>  
 </html>  
 {% endhighlight %}
 
@@ -44,14 +44,14 @@ Becomes:
 {% highlight html %}
 <!DOCTYPE html>  
 <html>  
-<head>  
-<style type=&#8221;text/css&#8221;>  
-* {-webkit-tap-highlight-color: rgba(0, 0, 0, 0);}  
-</style>  
-</head>  
-<body>  
-<a href=&#8221;#&#8221; style=&#8221;font-size:4em;&#8221;>Annoying!</a>  
-</body>  
+  <head>  
+    <style type="text/css">  
+      * {-webkit-tap-highlight-color: rgba(0, 0, 0, 0);}  
+    </style>  
+  </head>  
+  <body>  
+    <a href="" style="font-size:4em;">Annoying!</a>  
+  </body>  
 </html>  
 {% endhighlight %}
 

@@ -1,7 +1,7 @@
 ---
 layout: post
-permalink: /reclaiming-windows-audio-from-android-emulators
-alias: [/archives/939]
+permalink: /posts/reclaiming-windows-audio-from-android-emulators
+redirect_from: /archives/939/
 
 title: 'Reclaiming Windows Audio from Android Emulators &#038; VMs'
 author: Stephen Nicholas

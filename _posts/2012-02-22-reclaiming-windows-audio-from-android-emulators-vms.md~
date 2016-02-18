@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /reclaiming-windows-audio-from-android-emulators
-alias: [/archives/939]
+redirect_from: /archives/939/
 
 title: 'Reclaiming Windows Audio from Android Emulators &#038; VMs'
 author: Stephen Nicholas
@@ -20,6 +20,6 @@ He was even kind enough to share a simple bat script that would do it for me (Ru
 ECHO =====================================================  
 ECHO Restarting Windows Audio  
 ECHO =====================================================  
-net stop &#8220;Windows Audio&#8221;  
-net start &#8220;Windows Audio&#8221;  
+net stop "Windows Audio";  
+net start "Windows Audio";  
 {% endhighlight %}

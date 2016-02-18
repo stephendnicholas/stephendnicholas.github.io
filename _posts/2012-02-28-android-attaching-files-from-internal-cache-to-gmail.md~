@@ -1,7 +1,7 @@
 ---
 layout: post
 permalink: /android-attaching-files-from-internal-cache-to-gmail
-alias: [/archives/974]
+redirect_from: /archives/974/
 
 title: 'Android: Attaching files from internal cache to Gmail'
 author: Stephen Nicholas
@@ -11,13 +11,7 @@ dsq_thread_id:
   - 4458084681
 ---
 
-<!--
-<div style="margin-bottom:1em;font-family:Georgia,Times New Roman,serif;border:1px dashed #87CEEB;padding-top:0.5em;padding-bottom:0.5em;padding-right:1em;height:5.5em;background-color:#FFFFEE;">
-  <img src="http://stephendnicholas.com/wp-content/uploads/2012/02/warning_48.png" style="height:4em;margin-top:0.5em;margin-bottom:1em;margin-left:1em;margin-right:1em;" /><p>Warning: the method described in the post works well for Gmail, but apparently has some issues with other ACTION_SEND handlers (e.g. the MMS composer). A workaround is described in the comments.</p>
-</div>
--->
-
-*Warning: the method described in the post works well for Gmail, but apparently has some issues with other ACTION_SEND handlers (e.g. the MMS composer). A workaround is described in the comments.*
+*Note: the method described in the post works well for Gmail, but apparently has some issues with other ACTION_SEND handlers (e.g. the MMS composer). A workaround is described in the comments.*
 
 
 I've just spent the day modifying one of my Android applications so that it no longer requires the use of the SD card; making it use the internal cache for what little storage is required. Everything went pretty smoothly, until I got to a part of the app that tries to share some data by sending an email with an attachment via Gmail (using an <a href="http://developer.android.com/reference/android/content/Intent.html#ACTION_SEND" target="_blank"><code>ACTION_SEND</code></a> intent). Then things started behaving very oddly.
