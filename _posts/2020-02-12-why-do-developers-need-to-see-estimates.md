@@ -54,11 +54,15 @@ You want me to take my time to understand it, to break it down into manageable s
 If you want your developers to deliver their best, and if you believe they are invested and motivated to do so, then what value is that overhanging anchor giving?
 
 If anything it's more likely to introduce problems:
-* Teams unintenionally overcomitting, leading to missing delivery deadlines
-* Developers rushing to meet those implicit / explicit perceived deadlines
-  * Resulting in mistakes, bugs, loss of quality
-  * Making themselves miserable / Burning themselves out in the process
-* Or conversely, Parkinson's law: "work expanding so as to fill the time available for its completion"
+<ul style="padding-bottom:0em">
+  <li style="margin-bottom:1em">Teams unintenionally overcomitting, leading to missing delivery deadlines</li>
+  <li style="margin-bottom:1em">Developers rushing to meet those implicit / explicit perceived deadlines</li>
+  <ul style="margin-top:1em;">
+    <li>Resulting in mistakes, bugs, loss of quality</li>
+    <li>Making themselves miserable / Burning themselves out in the process</li>
+  </ul>
+  <li>Or conversely, Parkinson's law: "work expanding so as to fill the time available for its completion"</li>
+</ul>
 
 In my opinion, breaking the split between what may be useful at a project planning level and what may be hurtful at a development level, would make things healthier for your developers and better overall.
 
