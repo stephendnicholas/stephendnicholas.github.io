@@ -56,8 +56,8 @@ If you want your developers to deliver their best, and if you believe they are i
 If anything it's more likely to introduce problems:
 * Teams unintenionally overcomitting, leading to missing delivery deadlines
 * Developers rushing to meet those implicit / explicit perceived deadlines
-	* Resulting in mistakes, bugs, loss of quality
-	* Making themselves miserable / Burning themselves out in the process
+  * Resulting in mistakes, bugs, loss of quality
+  * Making themselves miserable / Burning themselves out in the process
 * Or conversely, Parkinson's law: "work expanding so as to fill the time available for its completion"
 
 In my opinion, breaking the split between what may be useful at a project planning level and what may be hurtful at a development level, would make things healthier for your developers and better overall.
