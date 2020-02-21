@@ -56,7 +56,7 @@ If you want your developers to deliver their best, and if you believe they are i
 If anything it's more likely to introduce problems:
 <ul style="padding-bottom:0em">
   <li style="margin-bottom:1em">Teams unintenionally overcomitting, leading to missing delivery deadlines</li>
-  <li style="margin-bottom:1em">Developers rushing to meet those implicit / explicit perceived deadlines<ul style="margin-top:1em;">
+  <li style="margin-bottom:1em">Developers rushing to meet those implicit / explicit perceived deadlines<ul style="margin-top:1em;margin-bottom:0">
       <li>Resulting in mistakes, bugs, loss of quality</li>
       <li>Making themselves miserable / Burning themselves out in the process</li>
     </ul>
