@@ -6,8 +6,6 @@ title: 'Why do developers need to see estimates?'
 author: Stephen Nicholas
 excerpt: Estimates provide value, but also risk. By limiting the use and visibility of those estimates, we can help minimise one aspect of the risk, while hopefully retaining  the value...
 ---
-# Why do developers need to see estimates?
-
 **TL; DR:** They don't. While estimates have value at the project planning level, there is no need for them to go any further. They provide no benefit to developers, but do carry significant risk.
 
 ## The value and risk of estimates
