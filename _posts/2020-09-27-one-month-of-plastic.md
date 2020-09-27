@@ -36,7 +36,7 @@ Anyway the point wasn't to compare myself to others, just to find my baseline, w
 
 I also learnt some interesting/surprising things along the way:
 
- 1. Firstly I was surprised by how much space so little weight took up. I'm used to hearing about plastic in tonnes, and I thought I had some idea in my head of how much that would be, but based on my experience, one tonne of household density plastic, would probably fill the whole downstairs of my flat. And it's that much more compelling...
+ 1. Firstly I was surprised by how much space so little weight took up. I'm used to hearing about plastic in tonnes, and I thought I had some idea in my head of how much that would be, but based on my experience, one tonne of household waste density plastic would probably fill the whole downstairs of my flat. And that's a much more compelling/concerning way to picture it.
  
  2.  <img src="{{ site.baseurl }}/assets/img/plastic_green_dot_recycling.jpg" style="width:25%" /> This symbol. I always assumed it meant you can recycle this thing, it certainly looks like it, but apparently not:  
 
