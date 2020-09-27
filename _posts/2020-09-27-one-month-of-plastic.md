@@ -6,7 +6,6 @@ title: 'One month of plastic is how much?!'
 author: Stephen Nicholas
 excerpt: Recently at work, someone posted about their plans to go plastic-free for July, encouraging others to do the same. This is something I've been interested in trying for a while...
 ---
-# One month of plastic is how much?!
 
 Recently at work, someone posted about their plans to go plastic-free for July, encouraging others to do the same. This is something I've been interested in trying for a while, after seeing a few friends do it, however with the realities of lockdown I decided it probably wasn't going to be practical right now (e.g. assuming food would be a major contributor and with me getting all my groceries delivered, removing a lot of control and making it hard to check packaging ahead of time (and impossible not to get plastic bags)).
 
